@@ -1,11 +1,13 @@
 Caffe-compact
 ==================
 
-This project remove most unnecessary dependency for CNN net testing.
+This project remove most unnecessary dependency for CNN net testing and
+feature extraction.
+
 Current dependency:
 * c++11 compiler (for shared_ptr)
 * google protobuf
-* cblas
+* cblas (e.g libatlas3gf-base)
 
 These dependencies can be satisfied on most platform including Windows.
 
