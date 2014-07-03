@@ -1,4 +1,4 @@
-CXX=clang++
+#CXX=clang++
 PROJECT := caffe
 STATIC_NAME := lib$(PROJECT).a
 
@@ -15,11 +15,11 @@ PROTO_OBJS := $(addprefix $(BUILD_DIR)/, ${PROTO_GEN_CC:.cc=.o})
 OBJS := $(PROTO_OBJS) $(CXX_OBJS)
 
 INCLUDE_DIRS += ./src ./include
-#CXXFLAGS+=-std=gnu++0x
+CXXFLAGS+=-std=gnu++0x
 LIBRARIES:=protobuf cblas
 
 COMMON_FLAGS := -DNDEBUG -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
-CXXFLAGS += -std=c++11 -fPIC $(COMMON_FLAGS)
+CXXFLAGS +=  -fPIC $(COMMON_FLAGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
 		$(foreach library,$(LIBRARIES),-l$(library))
 
