@@ -9,7 +9,13 @@ caffe-compact.
 Current dependency:
 * c++11 compiler (for shared_ptr)
 * google protobuf
-* cblas (e.g libatlas3gf-base)
+
+Optional dependency:
+* cblas (e.g. libatlas3gf-base)
+* Eigen3
+
+You can select an matrix backend by setting the USE_EIGEN environment in the
+Makefile.
 
 These dependencies can be satisfied on most platform including Windows and
 mobile. It makes Caffe-compact much easier to deploy.
@@ -19,6 +25,9 @@ third-party libraris when release your caffe CNN model.
 
 Difference
 ==================
+The original project can be found at: https://github.com/BVLC/caffe
+Caffe-compact only support a subset of functionality of caffe:
+
 * CNN forward pass only 
 * CPU only
 * Raw image input only
@@ -33,7 +42,6 @@ TODO: benchmark
 
 Future Work
 ==================
-* Use Eigen to avoid cblas library deployment
 * integrate protobuf
 
 

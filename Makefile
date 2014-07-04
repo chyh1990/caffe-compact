@@ -1,7 +1,7 @@
 CXX=clang++
 PROJECT := caffe
 STATIC_NAME := lib$(PROJECT).a
-USE_EIGEN:=y
+USE_EIGEN?=y
 
 CXX_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cpp" -name "*.cpp")
 HXX_SRCS := $(shell find include/$(PROJECT) ! -name "*.hpp")
