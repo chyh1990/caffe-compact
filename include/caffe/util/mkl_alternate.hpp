@@ -3,15 +3,37 @@
 #ifndef CAFFE_UTIL_MKL_ALTERNATE_H_
 #define CAFFE_UTIL_MKL_ALTERNATE_H_
 
+#include "../common.hpp"
 #ifdef USE_MKL
 
 #include <mkl.h>
 
 #else  // If use MKL, simply include the MKL header
 
+#ifndef USE_EIGEN
 extern "C" {
 #include <cblas.h>
 }
+#else
+#include <Eigen/Dense>
+enum  	CBLAS_ORDER { CblasRowMajor = 101, CblasColMajor = 102 };
+enum  	CBLAS_TRANSPOSE { CblasNoTrans = 111, CblasTrans = 112, CblasConjTrans = 113 };
+
+#define MAP_SVECTOR(name, ptr, N) Eigen::Map<Eigen::VectorXf> name(ptr, N)
+#define MAP_CONST_SVECTOR(name, ptr, N) Eigen::Map<const Eigen::VectorXf> name(ptr, N)
+#define MAP_DVECTOR(name, ptr, N) Eigen::Map<Eigen::VectorXd> name(ptr, N)
+#define MAP_CONST_DVECTOR(name, ptr, N) Eigen::Map<const Eigen::VectorXd> name(ptr, N)
+typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatXf;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatXd;
+
+#define MAP_SMATRIX(name, ptr, M, N) Eigen::Map<MatXf> name(ptr, M, N)
+#define MAP_CONST_SMATRIX(name, ptr, M, N) Eigen::Map<const MatXf> name(ptr, M, N)
+#define MAP_DMATRIX(name, ptr, M, N) Eigen::Map<MatXd> name(ptr, M, N)
+#define MAP_CONST_DMATRIX(name, ptr, M, N) Eigen::Map<const MatXd> name(ptr, M, N)
+
+
+#endif
+
 #include <math.h>
 
 // Functions that caffe uses but are not present if MKL is not linked.
@@ -77,6 +99,7 @@ DEFINE_VSL_BINARY_FUNC(Sub, y[i] = a[i] - b[i]);
 DEFINE_VSL_BINARY_FUNC(Mul, y[i] = a[i] * b[i]);
 DEFINE_VSL_BINARY_FUNC(Div, y[i] = a[i] / b[i]);
 
+#ifndef USE_EIGEN
 // In addition, MKL comes with an additional function axpby that is not present
 // in standard blas. We will simply use a two-step (inefficient, of course) way
 // to mimic that.
@@ -92,6 +115,7 @@ inline void cblas_daxpby(const int N, const double alpha, const double* X,
   cblas_dscal(N, beta, Y, incY);
   cblas_daxpy(N, alpha, X, incX, Y, incY);
 }
+#endif
 
 #endif  // USE_MKL
 #endif  // CAFFE_UTIL_MKL_ALTERNATE_H_

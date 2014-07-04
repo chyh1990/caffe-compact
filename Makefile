@@ -1,6 +1,7 @@
-#CXX=clang++
+CXX=clang++
 PROJECT := caffe
 STATIC_NAME := lib$(PROJECT).a
+USE_EIGEN:=y
 
 CXX_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cpp" -name "*.cpp")
 HXX_SRCS := $(shell find include/$(PROJECT) ! -name "*.hpp")
@@ -16,9 +17,17 @@ OBJS := $(PROTO_OBJS) $(CXX_OBJS)
 
 INCLUDE_DIRS += ./src ./include
 CXXFLAGS+=-std=gnu++0x
-LIBRARIES:=protobuf cblas
+LIBRARIES:=protobuf 
 
-COMMON_FLAGS := -DNDEBUG -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
+ifeq ($(USE_EIGEN), y)
+	CXXFLAGS += -DUSE_EIGEN
+	CXXFLAGS += -I./eigen3
+else
+	LIBRARIES += cblas
+endif
+
+
+COMMON_FLAGS := -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
 CXXFLAGS +=  -fPIC $(COMMON_FLAGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
 		$(foreach library,$(LIBRARIES),-l$(library))
@@ -56,6 +65,6 @@ clean:
 	@- $(RM) $(PROTO_GEN_HEADER) $(PROTO_GEN_CC) $(PROTO_GEN_PY)
 	@- $(RM) include/$(PROJECT)/proto/$(PROJECT).pb.h
 	@- $(RM) -rf $(BUILD_DIR)
-	rm -f feat_net_raw
+	@- rm -f feat_net_raw
 
 
