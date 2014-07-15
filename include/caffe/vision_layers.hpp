@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "pthread.h"
+//#include "pthread.h"
 //#include "boost/scoped_ptr.hpp"
 
 #include "caffe/layer.hpp"

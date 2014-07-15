@@ -6,6 +6,7 @@
 //#include <boost/shared_ptr.hpp>
 #include <memory>
 #include <cmath>
+#include <cstdint>
 #include "glog-compact.hpp"
 
 // Disable the copy and assignment operator for a class.

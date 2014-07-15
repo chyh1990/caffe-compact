@@ -12,7 +12,11 @@ shared_ptr<Caffe> Caffe::singleton_;
 
 int64_t cluster_seedgen(void) {
   int64_t s, seed, pid;
+#ifdef _MSC_VER
+  pid = 0x32423;
+#else
   pid = getpid();
+#endif
   s = time(NULL);
   seed = abs(((s * 181) * ((pid - 83) * 359)) % 104729);
   return seed;

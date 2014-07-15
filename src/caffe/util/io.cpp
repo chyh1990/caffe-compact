@@ -11,6 +11,10 @@
 #include <vector>
 #include <fstream>  // NOLINT(readability/streams)
 
+#ifdef _MSC_VER
+#include <io.h>  /* for open/close */
+#endif
+
 #include "caffe/common.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/proto/caffe.pb.h"
