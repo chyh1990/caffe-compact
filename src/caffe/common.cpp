@@ -8,7 +8,7 @@
 namespace caffe {
 
 shared_ptr<Caffe> Caffe::singleton_;
-
+nullstream __nullstream;
 
 int64_t cluster_seedgen(void) {
   int64_t s, seed, pid;

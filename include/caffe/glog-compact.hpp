@@ -6,6 +6,15 @@
 #include <ctime>
 #include <cstdlib>
 
+namespace caffe{
+struct nullstream: std::ostream{
+	nullstream(): std::ostream(0){}
+};
+
+template <typename T>
+nullstream &operator<<(nullstream &o, T const & x) { return o;}
+extern nullstream __nullstream;
+
 class LogMessage{
 	std::string level;
 	std::ostream &ofs;
@@ -25,9 +34,10 @@ class LogMessage{
 			stream() << std::endl; 
 		}
 };
+}
 
-#define 	LOG(type)   LogMessage(#type).stream()
-#define 	DLOG(type)   LogMessage(#type).stream()
+#define 	LOG(type)   caffe::LogMessage(#type).stream()
+#define 	DLOG(type)   caffe::LogMessage(#type).stream()
 #define 	VLOG(level)   if ((level) <= FLAGS_v) LOG(INFO)
 
 #define CHECK(x) if(x) {} else LOG(ERROR)
