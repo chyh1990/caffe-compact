@@ -18,9 +18,10 @@ extern nullstream __nullstream;
 class LogMessage{
 	std::string level;
 	std::ostream &ofs;
+	static bool enable;
 	public:
 		LogMessage(const std::string &l)
-			:level(l), ofs(std::cerr){
+			:level(l), ofs(enable ? std::cerr : __nullstream){
 			stream() << "[" << level << "]\t";
 		}
 		LogMessage(std::ostream &o)
@@ -32,6 +33,10 @@ class LogMessage{
 		}
 		~LogMessage() { 
 			stream() << std::endl; 
+		}
+
+		static void Enable(bool _enable){
+			enable = _enable;
 		}
 };
 }

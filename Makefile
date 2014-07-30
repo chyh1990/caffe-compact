@@ -17,6 +17,7 @@ OBJS := $(PROTO_OBJS) $(CXX_OBJS)
 
 INCLUDE_DIRS += ./src ./include
 CXXFLAGS+=-std=gnu++0x
+CXXFLAGS+=-fvisibility=hidden #hide symbols for static lib
 LIBRARIES:=protobuf 
 
 ifeq ($(USE_EIGEN), y)
