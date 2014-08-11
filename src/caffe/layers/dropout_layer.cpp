@@ -1,6 +1,7 @@
 // Copyright 2013 Yangqing Jia
 
 #include <vector>
+#include <climits>
 
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"

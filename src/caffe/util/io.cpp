@@ -13,6 +13,8 @@
 
 #ifdef _MSC_VER
 #include <io.h>  /* for open/close */
+#else
+#include <unistd.h>
 #endif
 
 #include "caffe/common.hpp"

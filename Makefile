@@ -1,4 +1,4 @@
-CXX=clang++
+CXX=g++
 PROJECT := caffe
 STATIC_NAME := lib$(PROJECT).a
 USE_EIGEN?=y

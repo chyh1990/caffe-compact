@@ -2,6 +2,9 @@
 
 #include <cstdio>
 #include <ctime>
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 
 #include "caffe/common.hpp"
 
