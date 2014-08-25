@@ -1,4 +1,6 @@
-CXX=g++
+CROSS_COMPILE?=
+CXX=$(CROSS_COMPILE)g++
+AR=$(CROSS_COMPILE)ar
 PROJECT := caffe
 STATIC_NAME := lib$(PROJECT).a
 USE_EIGEN?=y
@@ -15,7 +17,7 @@ CXX_OBJS := $(addprefix $(BUILD_DIR)/, ${CXX_SRCS:.cpp=.o})
 PROTO_OBJS := $(addprefix $(BUILD_DIR)/, ${PROTO_GEN_CC:.cc=.o})
 OBJS := $(PROTO_OBJS) $(CXX_OBJS)
 
-INCLUDE_DIRS += ./src ./include
+INCLUDE_DIRS += ./src ./include ./protobuf-2.4.1/build/include
 CXXFLAGS+=-std=gnu++0x
 CXXFLAGS+=-fvisibility=hidden #hide symbols for static lib
 LIBRARIES:=protobuf 
@@ -56,7 +58,7 @@ $(PROTO_GEN_CC): $(PROTO_SRCS)
 	@echo
 
 $(STATIC_NAME): init $(PROTO_OBJS) $(OBJS)
-	ar rcs $(STATIC_NAME) $(PROTO_OBJS) $(OBJS)
+	$(AR) rcs $(STATIC_NAME) $(PROTO_OBJS) $(OBJS)
 	@echo
 
 feat_net_raw: feat_net_raw.cpp $(STATIC_NAME)
