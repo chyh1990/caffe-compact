@@ -36,7 +36,7 @@ CXXFLAGS +=  -fPIC $(COMMON_FLAGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
 		$(foreach library,$(LIBRARIES),-l$(library))
 
-all: init $(STATIC_NAME) feat_net_raw
+all: init $(STATIC_NAME) 
 
 init:
 	@ mkdir -p $(foreach obj,$(OBJS),$(dir $(obj)))
@@ -63,7 +63,7 @@ $(STATIC_NAME): init $(PROTO_OBJS) $(OBJS)
 	@echo
 
 feat_net_raw: feat_net_raw.cpp $(STATIC_NAME)
-	$(CXX) $< $(CXXFLAGS) -o $@ -L. -lcaffe $(LDFLAGS)
+	$(CXX) $< $(CXXFLAGS) -o $@ -L. -lcaffe $(LDFLAGS) -lpthread
 clean:
 	@- $(RM) $(NAME) $(STATIC_NAME)
 	@- $(RM) $(PROTO_GEN_HEADER) $(PROTO_GEN_CC) $(PROTO_GEN_PY)
