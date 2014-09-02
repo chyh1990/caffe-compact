@@ -33,7 +33,7 @@ CXXFLAGS +=  -fPIC $(COMMON_FLAGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
 		$(foreach library,$(LIBRARIES),-l$(library))
 
-all: init $(STATIC_NAME) feat_net_raw
+all: init $(STATIC_NAME) feat_net_raw align_test
 
 init:
 	@ mkdir -p $(foreach obj,$(OBJS),$(dir $(obj)))
@@ -61,6 +61,10 @@ $(STATIC_NAME): init $(PROTO_OBJS) $(OBJS)
 
 feat_net_raw: feat_net_raw.cpp $(STATIC_NAME)
 	$(CXX) $< $(CXXFLAGS) -o $@ -L. -lcaffe $(LDFLAGS)
+
+align_test: align_test.cpp $(STATIC_NAME)
+	$(CXX) $< $(CXXFLAGS) -o $@ -L. -lcaffe $(LDFLAGS) $(shell pkg-config --libs opencv)
+
 clean:
 	@- $(RM) $(NAME) $(STATIC_NAME)
 	@- $(RM) $(PROTO_GEN_HEADER) $(PROTO_GEN_CC) $(PROTO_GEN_PY)
