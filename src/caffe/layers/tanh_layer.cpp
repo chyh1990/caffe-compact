@@ -8,6 +8,13 @@
 #include "caffe/layer.hpp"
 #include "caffe/vision_layers.hpp"
 
+#ifdef __SSE2__
+#include "caffe/fmath.hpp"
+#define EXP(x) fmath::exp(x)
+#else
+#define EXP(x) exp(x)
+#endif
+
 namespace caffe {
 
 template <typename Dtype>
@@ -18,7 +25,7 @@ void TanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype exp2x;
   const int count = bottom[0]->count();
   for (int i = 0; i < count; ++i) {
-    exp2x = exp(2*bottom_data[i]);
+    exp2x = EXP(2*bottom_data[i]);
     top_data[i] = (exp2x - Dtype(1))/(exp2x + Dtype(1));
   }
 }

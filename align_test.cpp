@@ -182,7 +182,8 @@ int main(int argc, char** argv) {
 		cv::cvtColor(mat, mat, CV_BGR2GRAY);
 		float * p = 0;
 		getZscore( mat, l, r, t, b, p);
-		CHECK(p != NULL);
+		if(!p)
+			continue;
 
 		float *d = data_blob->mutable_cpu_data();
 		size_t len = ih * iw * ic;
