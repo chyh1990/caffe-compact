@@ -1,0 +1,7 @@
+file(GLOB_RECURSE CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE CC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+
+add_library(caffe-compact STATIC ${CPP_SOURCES} ${CC_SOURCES})
+add_dependencies(caffe-compact proto)
+
+INSTALL(TARGETS caffe-compact DESTINATION lib)
