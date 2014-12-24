@@ -302,6 +302,7 @@ void Net<Dtype>::CopyLayersFrom(const Net<Dtype>& rhs, bool copy_diff)
 template <typename Dtype>
 void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
   int num_source_layers = param.layers_size();
+  loaded_blobs_.clear();
   for (int i = 0; i < num_source_layers; ++i) {
     const LayerParameter& source_layer = param.layers(i).layer();
     const string& source_layer_name = source_layer.name();
@@ -325,44 +326,60 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       CHECK_EQ(target_blobs[j]->height(), source_layer.blobs(j).height());
       CHECK_EQ(target_blobs[j]->width(), source_layer.blobs(j).width());
       target_blobs[j]->FromProto(source_layer.blobs(j));
+      loaded_blobs_.push_back(std::pair<int,int>(target_layer_id, j));
     }
   }
+}
+
+template <typename Dtype>
+void Net<Dtype>::CopyTrainedLayersFrom(const Net<Dtype> *src_net)
+{
+	CHECK(src_net != 0);
+	CHECK_EQ(this->layers().size(), src_net->layers_.size());
+	for(size_t i = 0; i < src_net->loaded_blobs_.size(); i++) {
+		int target_layer_id = src_net->loaded_blobs_[i].first;
+		int bid = src_net->loaded_blobs_[i].second;
+		CHECK_EQ(this->layers_[target_layer_id]->blobs().size(),
+			src_net->layers_[target_layer_id]->blobs().size());
+		DLOG(INFO) << "Copying model " << this->layer_names()[target_layer_id] << ' ' << bid;
+		this->layers_[target_layer_id]->blobs()[bid] = src_net->layers_[target_layer_id]->blobs()[bid];
+	}
 }
 
 template <typename Dtype>
 void Net<Dtype>::CopyTrainedLayersFrom(const string trained_filename) {
-  NetParameter param;
-  ReadProtoFromBinaryFile(trained_filename, &param);
-  CopyTrainedLayersFrom(param);
+	NetParameter param;
+	ReadProtoFromBinaryFile(trained_filename, &param);
+	CopyTrainedLayersFrom(param);
 }
 
 template <typename Dtype>
 void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) {
-  param->Clear();
-  param->set_name(name_);
-  // Add bottom and top
-  for (int i = 0; i < net_input_blob_indices_.size(); ++i) {
-    param->add_input(blob_names_[net_input_blob_indices_[i]]);
-  }
-  DLOG(INFO) << "Serializing " << layers_.size() << " layers";
-  for (int i = 0; i < layers_.size(); ++i) {
-    LayerConnection* layer_connection = param->add_layers();
-    for (int j = 0; j < bottom_id_vecs_[i].size(); ++j) {
-      layer_connection->add_bottom(blob_names_[bottom_id_vecs_[i][j]]);
-    }
-    for (int j = 0; j < top_id_vecs_[i].size(); ++j) {
-      layer_connection->add_top(blob_names_[top_id_vecs_[i][j]]);
-    }
-    LayerParameter* layer_parameter = layer_connection->mutable_layer();
-    layers_[i]->ToProto(layer_parameter, write_diff);
-  }
+	param->Clear();
+	param->set_name(name_);
+	// Add bottom and top
+	for (int i = 0; i < net_input_blob_indices_.size(); ++i) {
+		param->add_input(blob_names_[net_input_blob_indices_[i]]);
+	}
+	DLOG(INFO) << "Serializing " << layers_.size() << " layers";
+	for (int i = 0; i < layers_.size(); ++i) {
+		LayerConnection* layer_connection = param->add_layers();
+		for (int j = 0; j < bottom_id_vecs_[i].size(); ++j) {
+			layer_connection->add_bottom(blob_names_[bottom_id_vecs_[i][j]]);
+		}
+		for (int j = 0; j < top_id_vecs_[i].size(); ++j) {
+			layer_connection->add_top(blob_names_[top_id_vecs_[i][j]]);
+		}
+		LayerParameter* layer_parameter = layer_connection->mutable_layer();
+		layers_[i]->ToProto(layer_parameter, write_diff);
+	}
 }
 
 template <typename Dtype>
 void Net<Dtype>::Update() {
-  for (int i = 0; i < params_.size(); ++i) {
-    params_[i]->Update();
-  }
+	for (int i = 0; i < params_.size(); ++i) {
+		params_[i]->Update();
+	}
 }
 
 INSTANTIATE_CLASS(Net);

@@ -56,6 +56,7 @@ class Net {
   // trained layers from another net parameter instance.
   void CopyLayersFrom(const Net<Dtype>& rhs, bool copy_diff);
   void CopyTrainedLayersFrom(const NetParameter& param);
+  void CopyTrainedLayersFrom(const Net<Dtype> *src_net);
   void CopyTrainedLayersFrom(const string trained_filename);
   // Writes the net to a proto.
   void ToProto(NetParameter* param, bool write_diff = false);
@@ -119,6 +120,8 @@ class Net {
   vector<float> params_lr_;
   // the weight decay multipliers
   vector<float> params_weight_decay_;
+
+  vector<std::pair<int, int> > loaded_blobs_;
   DISABLE_COPY_AND_ASSIGN(Net);
 };
 
