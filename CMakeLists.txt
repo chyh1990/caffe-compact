@@ -3,6 +3,7 @@ include_directories(${CAFFE_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_definitions(-DUSE_EIGEN)
+add_definitions(-DCPU_ONLY)
 
 if(NOT MSVC)
 	SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++0x -Wno-sign-compare")

@@ -22,7 +22,7 @@ CXXFLAGS+=-std=gnu++0x
 CXXFLAGS+=$(EXTRA_CXXFLAGS)
 CXXFLAGS+=-fvisibility=hidden #hide symbols for static lib
 LDFLAGS+=-L./protobuf-2.4.1/build/lib
-LIBRARIES:=protobuf 
+LIBRARIES:=protobuf pthread 
 
 ifeq ($(USE_EIGEN), y)
 	CXXFLAGS += -DUSE_EIGEN
@@ -31,6 +31,7 @@ else
 	LIBRARIES += cblas
 endif
 
+CXXFLAGS += -DCPU_ONLY
 
 COMMON_FLAGS := -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
 CXXFLAGS +=  -fPIC $(COMMON_FLAGS)

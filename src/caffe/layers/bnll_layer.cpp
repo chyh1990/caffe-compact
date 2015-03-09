@@ -1,12 +1,8 @@
-// Copyright 2013 Yangqing Jia
-
 #include <algorithm>
 #include <vector>
 
 #include "caffe/layer.hpp"
 #include "caffe/vision_layers.hpp"
-
-using std::min;
 
 namespace caffe {
 
@@ -14,9 +10,9 @@ const float kBNLL_THRESHOLD = 50.;
 
 template <typename Dtype>
 void BNLLLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    vector<Blob<Dtype>*>* top) {
+    const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = (*top)[0]->mutable_cpu_data();
+  Dtype* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
   for (int i = 0; i < count; ++i) {
     top_data[i] = bottom_data[i] > 0 ?
@@ -26,25 +22,27 @@ void BNLLLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-Dtype BNLLLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const bool propagate_down,
-    vector<Blob<Dtype>*>* bottom) {
-  if (propagate_down) {
-    const Dtype* bottom_data = (*bottom)[0]->cpu_data();
+void BNLLLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down,
+    const vector<Blob<Dtype>*>& bottom) {
+  if (propagate_down[0]) {
+    const Dtype* bottom_data = bottom[0]->cpu_data();
     const Dtype* top_diff = top[0]->cpu_diff();
-    Dtype* bottom_diff = (*bottom)[0]->mutable_cpu_diff();
-    const int count = (*bottom)[0]->count();
+    Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
+    const int count = bottom[0]->count();
     Dtype expval;
     for (int i = 0; i < count; ++i) {
-      expval = exp(min(bottom_data[i], Dtype(kBNLL_THRESHOLD)));
+      expval = exp(std::min(bottom_data[i], Dtype(kBNLL_THRESHOLD)));
       bottom_diff[i] = top_diff[i] * expval / (expval + 1.);
     }
   }
-  return Dtype(0);
 }
 
+#ifdef CPU_ONLY
+STUB_GPU(BNLLLayer);
+#endif
 
 INSTANTIATE_CLASS(BNLLLayer);
-
+REGISTER_LAYER_CLASS(BNLL);
 
 }  // namespace caffe

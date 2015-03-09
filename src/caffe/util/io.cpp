@@ -31,17 +31,19 @@ using google::protobuf::io::ZeroCopyInputStream;
 using google::protobuf::io::CodedInputStream;
 using google::protobuf::io::ZeroCopyOutputStream;
 using google::protobuf::io::CodedOutputStream;
+using google::protobuf::Message;
 
 namespace caffe {
 
-void ReadProtoFromTextFile(const char* filename,
-    ::google::protobuf::Message* proto) {
+bool ReadProtoFromTextFile(const char* filename,
+    Message* proto) {
   int fd = open(filename, O_RDONLY);
   CHECK_NE(fd, -1) << "File not found: " << filename;
   FileInputStream* input = new FileInputStream(fd);
   CHECK(google::protobuf::TextFormat::Parse(input, proto));
   delete input;
   close(fd);
+  return true;
 }
 
 void WriteProtoToTextFile(const Message& proto, const char* filename) {
@@ -52,7 +54,7 @@ void WriteProtoToTextFile(const Message& proto, const char* filename) {
   close(fd);
 }
 
-void ReadProtoFromBinaryFile(const char* filename, Message* proto) {
+bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
 #ifdef _MSC_VER
   int fd = open(filename, O_RDONLY|O_BINARY);
 #else
@@ -68,6 +70,7 @@ void ReadProtoFromBinaryFile(const char* filename, Message* proto) {
   delete coded_input;
   delete raw_input;
   close(fd);
+  return true;
 }
 
 void WriteProtoToBinaryFile(const Message& proto, const char* filename) {

@@ -1,5 +1,8 @@
 Caffe-compact
 ==================
+
+caffe_version: 9e970c17c337e770f0df396d3b7882f6f97cf308
+
 Caffe-compact aims to provide a self-contained CNN model testing library.
 
 This project remove most unnecessary dependency for CNN net testing and
@@ -46,4 +49,6 @@ Future Work
 
 
 Yuheng Chen, 2014
+
 chyh1990@gmail.com
+

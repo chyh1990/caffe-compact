@@ -196,6 +196,20 @@ void caffe_axpy<double>(const int N, const double alpha, const double* X,
 #endif
 }
 
+template <typename Dtype>
+void caffe_set(const int N, const Dtype alpha, Dtype* Y) {
+  if (alpha == 0) {
+    memset(Y, 0, sizeof(Dtype) * N);  // NOLINT(caffe/alt_fn)
+    return;
+  }
+  for (int i = 0; i < N; ++i) {
+    Y[i] = alpha;
+  }
+}
+
+template void caffe_set<int>(const int N, const int alpha, int* Y);
+template void caffe_set<float>(const int N, const float alpha, float* Y);
+template void caffe_set<double>(const int N, const double alpha, double* Y);
 
 #if 0
 template <>
@@ -212,7 +226,7 @@ void caffe_gpu_axpy<double>(const int N, const double alpha, const double* X,
 #endif
 
 template <>
-void caffe_axpby<float>(const int N, const float alpha, const float* X,
+void caffe_cpu_axpby<float>(const int N, const float alpha, const float* X,
     const float beta, float* Y) {
 #ifdef USE_EIGEN
 	MAP_SVECTOR(eY, Y, N);
@@ -224,7 +238,7 @@ void caffe_axpby<float>(const int N, const float alpha, const float* X,
 }
 
 template <>
-void caffe_axpby<double>(const int N, const double alpha, const double* X,
+void caffe_cpu_axpby<double>(const int N, const double alpha, const double* X,
     const double beta, double* Y) {
 #ifdef USE_EIGEN
 	MAP_DVECTOR(eY, Y, N);
@@ -235,23 +249,27 @@ void caffe_axpby<double>(const int N, const double alpha, const double* X,
 #endif
 }
 
-template <>
-void caffe_copy<float>(const int N, const float* X, float* Y) {
-#ifdef USE_EIGEN
-	memcpy(Y, X, sizeof(float)*N);
+template <typename Dtype>
+void caffe_copy(const int N, const Dtype* X, Dtype* Y) {
+  if (X != Y) {
+    if (Caffe::mode() == Caffe::GPU) {
+#ifndef CPU_ONLY
+      // NOLINT_NEXT_LINE(caffe/alt_fn)
+      CUDA_CHECK(cudaMemcpy(Y, X, sizeof(Dtype) * N, cudaMemcpyDefault));
 #else
-  cblas_scopy(N, X, 1, Y, 1);
+      NO_GPU;
 #endif
+    } else {
+      memcpy(Y, X, sizeof(Dtype) * N);  // NOLINT(caffe/alt_fn)
+    }
+  }
 }
 
-template <>
-void caffe_copy<double>(const int N, const double* X, double* Y) {
-#ifdef USE_EIGEN
-	memcpy(Y, X, sizeof(double)*N);
-#else
-  cblas_dcopy(N, X, 1, Y, 1);
-#endif
-}
+template void caffe_copy<int>(const int N, const int* X, int* Y);
+template void caffe_copy<unsigned int>(const int N, const unsigned int* X,
+    unsigned int* Y);
+template void caffe_copy<float>(const int N, const float* X, float* Y);
+template void caffe_copy<double>(const int N, const double* X, double* Y);
 
 #if 0
 template <>
@@ -423,6 +441,27 @@ double caffe_cpu_dot<double>(const int n, const double* x, const double* y) {
   return cblas_ddot(n, x, 1, y, 1);
 #endif
 }
+
+template <>
+float caffe_cpu_asum<float>(const int n, const float* x) {
+#ifdef USE_EIGEN
+  MAP_CONST_SVECTOR(eX, x, n);
+  return eX.cwiseAbs().sum();
+#else
+  return cblas_sasum(n, x, 1);
+#endif
+}
+
+template <>
+double caffe_cpu_asum<double>(const int n, const double* x) {
+#ifdef USE_EIGEN
+  MAP_CONST_DVECTOR(eX, x, n);
+  return eX.cwiseAbs().sum();
+#else
+  return cblas_dasum(n, x, 1);
+#endif
+}
+
 
 #if 0 
 template <>

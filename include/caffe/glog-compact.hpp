@@ -55,4 +55,13 @@ class LogMessage{
 #define 	CHECK_GE(x, y)   CHECK((x) >= (y))
 #define 	CHECK_NE(x, y)   CHECK((x) != (y))
 
+#define 	DCHECK_EQ(x, y)   DCHECK((x) == (y))
+#define 	DCHECK_LT(x, y)   DCHECK((x) < (y))
+#define 	DCHECK_GT(x, y)   DCHECK((x) > (y))
+#define 	DCHECK_LE(x, y)   DCHECK((x) <= (y))
+#define 	DCHECK_GE(x, y)   DCHECK((x) >= (y))
+#define 	DCHECK_NE(x, y)   DCHECK((x) != (y))
+
+
+
 #endif

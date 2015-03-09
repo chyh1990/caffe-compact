@@ -15,11 +15,11 @@ using ::google::protobuf::Message;
 
 namespace caffe {
 
-void ReadProtoFromTextFile(const char* filename,
+bool ReadProtoFromTextFile(const char* filename,
     Message* proto);
-inline void ReadProtoFromTextFile(const string& filename,
+inline bool ReadProtoFromTextFile(const string& filename,
     Message* proto) {
-  ReadProtoFromTextFile(filename.c_str(), proto);
+  return ReadProtoFromTextFile(filename.c_str(), proto);
 }
 
 void WriteProtoToTextFile(const Message& proto, const char* filename);
@@ -27,11 +27,11 @@ inline void WriteProtoToTextFile(const Message& proto, const string& filename) {
   WriteProtoToTextFile(proto, filename.c_str());
 }
 
-void ReadProtoFromBinaryFile(const char* filename,
+bool ReadProtoFromBinaryFile(const char* filename,
     Message* proto);
-inline void ReadProtoFromBinaryFile(const string& filename,
+inline bool ReadProtoFromBinaryFile(const string& filename,
     Message* proto) {
-  ReadProtoFromBinaryFile(filename.c_str(), proto);
+  return ReadProtoFromBinaryFile(filename.c_str(), proto);
 }
 
 void WriteProtoToBinaryFile(const Message& proto, const char* filename);

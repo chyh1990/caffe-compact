@@ -118,7 +118,6 @@ int main(int argc, char** argv) {
 	}
 
 	LogMessage::Enable(true);
-	Caffe::set_phase(Caffe::TEST);
 	Caffe::set_mode(Caffe::CPU);
 
 	NetParameter test_net_param;
@@ -157,7 +156,7 @@ int main(int argc, char** argv) {
 
 	Blob<float>* output = caffe_test_net.top_vecs()[feature_layer_idx][0],
 		*data_blob = caffe_test_net.top_vecs()[data_layer_idx][0];
-	RawImageLayer<float> *data_layer = dynamic_cast<RawImageLayer<float>* >(caffe_test_net.layers()[data_layer_idx].get());
+	MemoryDataLayer<float> *data_layer = dynamic_cast<MemoryDataLayer<float>* >(caffe_test_net.layers()[data_layer_idx].get());
 	CHECK(data_layer != 0);
 
 	LOG(INFO) << "OUTPUT BLOB dim: " << output->num() << ' '
@@ -187,8 +186,11 @@ int main(int argc, char** argv) {
 
 		float *d = data_blob->mutable_cpu_data();
 		size_t len = ih * iw * ic;
+		//XXX
+		float dummy_label[1] = {0};
+		data_layer->Reset(p, dummy_label, 1);
 		for(int j = 0; j < data_blob->num(); j++){
-			memcpy(d, p, sizeof(float)*CROP_WINSIZE*CROP_WINSIZE);
+			//memcpy(d, p, sizeof(float)*CROP_WINSIZE*CROP_WINSIZE);
 			/*
 			   size_t nread = fread(buf, sizeof(double), len, finput);
 			   CHECK_EQ(nread, len);

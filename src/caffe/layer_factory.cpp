@@ -1,96 +1,179 @@
-// Copyright 2013 Yangqing Jia
-
-#ifndef CAFFE_LAYER_FACTORY_HPP_
-#define CAFFE_LAYER_FACTORY_HPP_
-
 #include <string>
 
 #include "caffe/layer.hpp"
-#include "caffe/vision_layers.hpp"
+#include "caffe/layer_factory.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/vision_layers.hpp"
 
+#ifdef WITH_PYTHON_LAYER
+#include "caffe/python_layer.hpp"
+#endif
 
 namespace caffe {
 
-
-// A function to get a specific layer from the specification given in
-// LayerParameter. Ideally this would be replaced by a factory pattern,
-// but we will leave it this way for now.
+// Get convolution layer according to engine.
 template <typename Dtype>
-Layer<Dtype>* GetLayer(const LayerParameter& param) {
-  const std::string& type = param.type();
-  if (type == "accuracy") {
-    return new AccuracyLayer<Dtype>(param);
-  } else if (type == "verif_accuracy") {
-    return new VerificationAccuracyLayer<Dtype>(param);
-  } else if (type == "bnll") {
-    return new BNLLLayer<Dtype>(param);
-  } else if (type == "concat") {
-    return new ConcatLayer<Dtype>(param);
-  } else if (type == "conv") {
-    return new ConvolutionLayer<Dtype>(param);
-#if 0
-  } else if (type == "data") {
-    return new DataLayer<Dtype>(param);
-  } else if (type == "shuffle_data") {
-    return new ShuffleDataLayer<Dtype>(param);
+shared_ptr<Layer<Dtype> > GetConvolutionLayer(
+    const LayerParameter& param) {
+  ConvolutionParameter_Engine engine = param.convolution_param().engine();
+  if (engine == ConvolutionParameter_Engine_DEFAULT) {
+    engine = ConvolutionParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = ConvolutionParameter_Engine_CUDNN;
 #endif
-  } else if (type == "dropout") {
-    return new DropoutLayer<Dtype>(param);
-  } else if (type == "dropout_group") {
-    return new DropoutGroupLayer<Dtype>(param);
-  } else if (type == "euclidean_loss") {
-    return new EuclideanLossLayer<Dtype>(param);
-  } else if (type == "flatten") {
-    return new FlattenLayer<Dtype>(param);
-#if 0
-  } else if (type == "hdf5_data") {
-    return new HDF5DataLayer<Dtype>(param);
-  } else if (type == "images") {
-    return new ImagesLayer<Dtype>(param);
-#endif
-  } else if (type == "raw_image") {
-    return new RawImageLayer<Dtype>(param);
-  } else if (type == "im2col") {
-    return new Im2colLayer<Dtype>(param);
-  } else if (type == "infogain_loss") {
-    return new InfogainLossLayer<Dtype>(param);
-  } else if (type == "innerproduct") {
-    return new InnerProductLayer<Dtype>(param);
-  } else if (type == "lrn") {
-    return new LRNLayer<Dtype>(param);
-  } else if (type == "multinomial_logistic_loss") {
-    return new MultinomialLogisticLossLayer<Dtype>(param);
-  } else if (type == "padding") {
-    return new PaddingLayer<Dtype>(param);
-  } else if (type == "pool") {
-    return new PoolingLayer<Dtype>(param);
-  } else if (type == "relu") {
-    return new ReLULayer<Dtype>(param);
-  } else if (type == "sigmoid") {
-    return new SigmoidLayer<Dtype>(param);
-  } else if (type == "softmax") {
-    return new SoftmaxLayer<Dtype>(param);
-  } else if (type == "softmax_loss") {
-    return new SoftmaxWithLossLayer<Dtype>(param);
-  } else if (type == "split") {
-    return new SplitLayer<Dtype>(param);
-  } else if (type == "tanh") {
-    return new TanHLayer<Dtype>(param);
-#if 0
-  } else if (type == "window_data") {
-    return new WindowDataLayer<Dtype>(param);
+  }
+  if (engine == ConvolutionParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new ConvolutionLayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == ConvolutionParameter_Engine_CUDNN) {
+    return shared_ptr<Layer<Dtype> >(new CuDNNConvolutionLayer<Dtype>(param));
 #endif
   } else {
-    LOG(FATAL) << "Unknown layer name: " << type;
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
   }
-  // just to suppress old compiler warnings.
-  return (Layer<Dtype>*)(NULL);
 }
 
-template Layer<float>* GetLayer(const LayerParameter& param);
-template Layer<double>* GetLayer(const LayerParameter& param);
+REGISTER_LAYER_CREATOR(Convolution, GetConvolutionLayer);
 
+// Get pooling layer according to engine.
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetPoolingLayer(const LayerParameter& param) {
+  PoolingParameter_Engine engine = param.pooling_param().engine();
+  if (engine == PoolingParameter_Engine_DEFAULT) {
+    engine = PoolingParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = PoolingParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == PoolingParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new PoolingLayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == PoolingParameter_Engine_CUDNN) {
+    PoolingParameter p_param = param.pooling_param();
+    if (p_param.pad() || p_param.pad_h() || p_param.pad_w() ||
+        param.top_size() > 1) {
+      LOG(INFO) << "CUDNN does not support padding or multiple tops. "
+                << "Using Caffe's own pooling layer.";
+      return shared_ptr<Layer<Dtype> >(new PoolingLayer<Dtype>(param));
+    }
+    return shared_ptr<Layer<Dtype> >(new CuDNNPoolingLayer<Dtype>(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(Pooling, GetPoolingLayer);
+
+// Get relu layer according to engine.
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetReLULayer(const LayerParameter& param) {
+  ReLUParameter_Engine engine = param.relu_param().engine();
+  if (engine == ReLUParameter_Engine_DEFAULT) {
+    engine = ReLUParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = ReLUParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == ReLUParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new ReLULayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == ReLUParameter_Engine_CUDNN) {
+    return shared_ptr<Layer<Dtype> >(new CuDNNReLULayer<Dtype>(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(ReLU, GetReLULayer);
+
+// Get sigmoid layer according to engine.
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetSigmoidLayer(const LayerParameter& param) {
+  SigmoidParameter_Engine engine = param.sigmoid_param().engine();
+  if (engine == SigmoidParameter_Engine_DEFAULT) {
+    engine = SigmoidParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = SigmoidParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == SigmoidParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new SigmoidLayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == SigmoidParameter_Engine_CUDNN) {
+    return shared_ptr<Layer<Dtype> >(new CuDNNSigmoidLayer<Dtype>(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(Sigmoid, GetSigmoidLayer);
+
+// Get softmax layer according to engine.
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetSoftmaxLayer(const LayerParameter& param) {
+  SoftmaxParameter_Engine engine = param.softmax_param().engine();
+  if (engine == SoftmaxParameter_Engine_DEFAULT) {
+    engine = SoftmaxParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = SoftmaxParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == SoftmaxParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new SoftmaxLayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == SoftmaxParameter_Engine_CUDNN) {
+    return shared_ptr<Layer<Dtype> >(new CuDNNSoftmaxLayer<Dtype>(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(Softmax, GetSoftmaxLayer);
+
+// Get tanh layer according to engine.
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetTanHLayer(const LayerParameter& param) {
+  TanHParameter_Engine engine = param.tanh_param().engine();
+  if (engine == TanHParameter_Engine_DEFAULT) {
+    engine = TanHParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = TanHParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == TanHParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new TanHLayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == TanHParameter_Engine_CUDNN) {
+    return shared_ptr<Layer<Dtype> >(new CuDNNTanHLayer<Dtype>(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(TanH, GetTanHLayer);
+
+#ifdef WITH_PYTHON_LAYER
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetPythonLayer(const LayerParameter& param) {
+  Py_Initialize();
+  try {
+    bp::object module = bp::import(param.python_param().module().c_str());
+    bp::object layer = module.attr(param.python_param().layer().c_str())(param);
+    return bp::extract<shared_ptr<PythonLayer<Dtype> > >(layer)();
+  } catch (bp::error_already_set) {
+    PyErr_Print();
+    throw;
+  }
+}
+
+REGISTER_LAYER_CREATOR(Python, GetPythonLayer);
+#endif
+
+// Layers that use their constructor as their default creator should be
+// registered in their corresponding cpp files. Do not register them here.
 }  // namespace caffe
-
-#endif  // CAFFE_LAYER_FACTORY_HPP_
