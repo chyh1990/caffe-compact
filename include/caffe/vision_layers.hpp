@@ -76,6 +76,16 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   bool bias_term_;
   bool is_1x1_;
 
+  int NTILE_WIDTH_;
+  int NTILE_HEIGHT_;
+  int TILE_WIDTH_;
+  int TILE_HEIGHT_;
+  int ntiles_;
+
+  Blob<Dtype> col_buffer_;
+  Blob<Dtype> out_buffer_;
+  Blob<Dtype> bias_multiplier_;
+
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
   inline void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {
@@ -107,8 +117,6 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   int col_offset_;
   int output_offset_;
 
-  Blob<Dtype> col_buffer_;
-  Blob<Dtype> bias_multiplier_;
 };
 
 /**

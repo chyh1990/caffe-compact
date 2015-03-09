@@ -19,6 +19,7 @@ void ConvolutionLayer<Dtype>::compute_output_shape() {
 template <typename Dtype>
 void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
+  if(this->NTILE_WIDTH_ * this->NTILE_HEIGHT_ <= 1){
   const Dtype* weight = this->blobs_[0]->cpu_data();
   for (int i = 0; i < bottom.size(); ++i) {
     const Dtype* bottom_data = bottom[i]->cpu_data();
@@ -31,6 +32,61 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         this->forward_cpu_bias(top_data + top[i]->offset(n), bias);
       }
     }
+  }
+  }else{
+	  NOT_IMPLEMENTED;
+	  exit(0);
+
+	  CHECK_EQ(this->stride_h_, 1);
+	  CHECK_EQ(this->stride_w_, 1);
+	  CHECK_EQ(this->pad_h_, 0);
+	  CHECK_EQ(this->pad_w_, 0);
+	  CHECK_EQ(this->group_, 1);
+	  CHECK_EQ(this->kernel_h_, this->kernel_w_);
+	  CHECK_EQ(this->col_buffer_.height(), this->TILE_HEIGHT_);
+	  CHECK_EQ(bottom.size(), 1);
+          const Dtype* bottom_data = bottom[0]->cpu_data();
+	  Dtype* top_data = top[0]->mutable_cpu_data();
+          Dtype* col_data = this->col_buffer_.mutable_cpu_data();
+	  Dtype *out_buffer = this->out_buffer_.mutable_cpu_data();
+	  for (int n = 0; n < this->num_; ++n) {
+		  for(int ny = 0; ny < this->NTILE_HEIGHT_; ny++){
+			  for(int nx = 0; nx < this->NTILE_WIDTH_; nx++){
+				  int idx = ny * this->NTILE_WIDTH_ + nx;
+				  const Dtype* weight = this->blobs_[idx]->cpu_data();
+				  const Dtype * img = bottom_data + bottom[0]->offset(n, 0,
+						  this->TILE_HEIGHT_ * ny, this->TILE_WIDTH_ * nx);
+				  im2col_tile_cpu(img,   this->channels_, this->height_,
+						  this->width_, this->kernel_h_, col_data,
+						  this->TILE_HEIGHT_, this->TILE_WIDTH_);
+				  //dump(&col_buffer_);
+				  int M_ = this->num_output_ / this->group_;
+				  int K_ = this->channels_ * this->kernel_h_ * this->kernel_w_ / this->group_;
+				  int N_ = this->TILE_WIDTH_ * this->TILE_HEIGHT_;
+				  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, M_, N_, K_,
+						  (Dtype)1., weight, col_data, (Dtype)0., out_buffer);
+
+				  if (this->bias_term_) {
+					  const Dtype *bias_ptr = this->blobs_[idx + this->NTILE_WIDTH_ *
+						  this->NTILE_HEIGHT_]->cpu_data();
+					  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, this->num_output_,
+							  N_, 1, (Dtype)1., bias_ptr,
+							  reinterpret_cast<const Dtype*>(this->bias_multiplier_.cpu_data()),
+							  (Dtype)1., out_buffer);
+				  }
+				  //dump(&out_buffer_);
+				  /* copy back */
+
+				  int height_out = this->height_ - this->kernel_h_ + 1;
+				  int width_out = this->width_ - this->kernel_w_ + 1;
+				  copy_stride_cpu(out_buffer, this->num_output_, this->TILE_HEIGHT_, this->TILE_WIDTH_,
+						  top_data + top[0]->offset(n, 0, this->TILE_HEIGHT_*ny,
+							  this->TILE_WIDTH_*nx), height_out, width_out);
+
+			  }
+
+		      }
+		  }
   }
 }
 

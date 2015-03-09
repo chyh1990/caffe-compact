@@ -3597,6 +3597,20 @@ class ConvolutionParameter : public ::google::protobuf::Message {
   inline ::caffe::ConvolutionParameter_Engine engine() const;
   inline void set_engine(::caffe::ConvolutionParameter_Engine value);
   
+  // optional int32 ntile_width = 72 [default = 1];
+  inline bool has_ntile_width() const;
+  inline void clear_ntile_width();
+  static const int kNtileWidthFieldNumber = 72;
+  inline ::google::protobuf::int32 ntile_width() const;
+  inline void set_ntile_width(::google::protobuf::int32 value);
+  
+  // optional int32 ntile_height = 73 [default = 1];
+  inline bool has_ntile_height() const;
+  inline void clear_ntile_height();
+  static const int kNtileHeightFieldNumber = 73;
+  inline ::google::protobuf::int32 ntile_height() const;
+  inline void set_ntile_height(::google::protobuf::int32 value);
+  
   // @@protoc_insertion_point(class_scope:caffe.ConvolutionParameter)
  private:
   inline void set_has_num_output();
@@ -3629,6 +3643,10 @@ class ConvolutionParameter : public ::google::protobuf::Message {
   inline void clear_has_bias_filler();
   inline void set_has_engine();
   inline void clear_has_engine();
+  inline void set_has_ntile_width();
+  inline void clear_has_ntile_width();
+  inline void set_has_ntile_height();
+  inline void clear_has_ntile_height();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -3647,9 +3665,11 @@ class ConvolutionParameter : public ::google::protobuf::Message {
   ::caffe::FillerParameter* weight_filler_;
   ::caffe::FillerParameter* bias_filler_;
   int engine_;
+  ::google::protobuf::int32 ntile_width_;
+  ::google::protobuf::int32 ntile_height_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
   
   friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
   friend void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto();
@@ -12215,6 +12235,50 @@ inline void ConvolutionParameter::set_engine(::caffe::ConvolutionParameter_Engin
   GOOGLE_DCHECK(::caffe::ConvolutionParameter_Engine_IsValid(value));
   set_has_engine();
   engine_ = value;
+}
+
+// optional int32 ntile_width = 72 [default = 1];
+inline bool ConvolutionParameter::has_ntile_width() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ConvolutionParameter::set_has_ntile_width() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ConvolutionParameter::clear_has_ntile_width() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ConvolutionParameter::clear_ntile_width() {
+  ntile_width_ = 1;
+  clear_has_ntile_width();
+}
+inline ::google::protobuf::int32 ConvolutionParameter::ntile_width() const {
+  return ntile_width_;
+}
+inline void ConvolutionParameter::set_ntile_width(::google::protobuf::int32 value) {
+  set_has_ntile_width();
+  ntile_width_ = value;
+}
+
+// optional int32 ntile_height = 73 [default = 1];
+inline bool ConvolutionParameter::has_ntile_height() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void ConvolutionParameter::set_has_ntile_height() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void ConvolutionParameter::clear_has_ntile_height() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void ConvolutionParameter::clear_ntile_height() {
+  ntile_height_ = 1;
+  clear_has_ntile_height();
+}
+inline ::google::protobuf::int32 ConvolutionParameter::ntile_height() const {
+  return ntile_height_;
+}
+inline void ConvolutionParameter::set_ntile_height(::google::protobuf::int32 value) {
+  set_has_ntile_height();
+  ntile_height_ = value;
 }
 
 // -------------------------------------------------------------------

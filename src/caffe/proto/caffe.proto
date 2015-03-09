@@ -418,6 +418,8 @@ message ConvolutionParameter {
     CUDNN = 2;
   }
   optional Engine engine = 15 [default = DEFAULT];
+  optional int32 ntile_width = 72 [default = 1];
+  optional int32 ntile_height = 73 [default = 1];
 }
 
 // Message that stores parameters used by DataLayer

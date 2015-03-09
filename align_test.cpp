@@ -111,13 +111,13 @@ static void draw(const float *buf, const float *pt){
 
 
 int main(int argc, char** argv) {
+	LogMessage::Enable(true);
 	if (argc < 3) {
 		LOG(ERROR) << "test_net net_proto pretrained_net_proto iterations inputbin output_dir"
 			<< " [CPU/GPU]";
 		return 0;
 	}
 
-	LogMessage::Enable(true);
 	Caffe::set_mode(Caffe::CPU);
 
 	NetParameter test_net_param;
