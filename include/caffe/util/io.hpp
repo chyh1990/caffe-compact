@@ -48,6 +48,11 @@ inline bool ReadImageToDatum(const string& filename, const int label,
   return ReadImageToDatum(filename, label, 0, 0, datum);
 }
 
+void ReadNetParamsFromTextFileOrDie(const string& param_file,
+                                    NetParameter* param);
+
+void ReadNetParamsFromBinaryFileOrDie(const string& param_file,
+                                      NetParameter* param);
 #if 0
 template <typename Dtype>
 void hdf5_load_nd_dataset_helper(

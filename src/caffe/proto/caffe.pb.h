@@ -7726,6 +7726,20 @@ class V0LayerParameter : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 concat_dim() const;
   inline void set_concat_dim(::google::protobuf::uint32 value);
   
+  // optional int32 ntile_width = 72 [default = 1];
+  inline bool has_ntile_width() const;
+  inline void clear_ntile_width();
+  static const int kNtileWidthFieldNumber = 72;
+  inline ::google::protobuf::int32 ntile_width() const;
+  inline void set_ntile_width(::google::protobuf::int32 value);
+  
+  // optional int32 ntile_height = 73 [default = 1];
+  inline bool has_ntile_height() const;
+  inline void clear_ntile_height();
+  static const int kNtileHeightFieldNumber = 73;
+  inline ::google::protobuf::int32 ntile_height() const;
+  inline void set_ntile_height(::google::protobuf::int32 value);
+  
   // optional .caffe.HDF5OutputParameter hdf5_output_param = 1001;
   inline bool has_hdf5_output_param() const;
   inline void clear_hdf5_output_param();
@@ -7804,6 +7818,10 @@ class V0LayerParameter : public ::google::protobuf::Message {
   inline void clear_has_shuffle_images();
   inline void set_has_concat_dim();
   inline void clear_has_concat_dim();
+  inline void set_has_ntile_width();
+  inline void clear_has_ntile_width();
+  inline void set_has_ntile_height();
+  inline void clear_has_ntile_height();
   inline void set_has_hdf5_output_param();
   inline void clear_has_hdf5_output_param();
   
@@ -7846,11 +7864,13 @@ class V0LayerParameter : public ::google::protobuf::Message {
   ::google::protobuf::int32 new_channels_;
   ::google::protobuf::int32 new_height_;
   ::google::protobuf::int32 new_width_;
-  ::caffe::HDF5OutputParameter* hdf5_output_param_;
   ::google::protobuf::uint32 concat_dim_;
+  ::google::protobuf::int32 ntile_width_;
+  ::caffe::HDF5OutputParameter* hdf5_output_param_;
+  ::google::protobuf::int32 ntile_height_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(38 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(40 + 31) / 32];
   
   friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
   friend void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto();
@@ -17334,15 +17354,59 @@ inline void V0LayerParameter::set_concat_dim(::google::protobuf::uint32 value) {
   concat_dim_ = value;
 }
 
-// optional .caffe.HDF5OutputParameter hdf5_output_param = 1001;
-inline bool V0LayerParameter::has_hdf5_output_param() const {
+// optional int32 ntile_width = 72 [default = 1];
+inline bool V0LayerParameter::has_ntile_width() const {
   return (_has_bits_[1] & 0x00000020u) != 0;
 }
-inline void V0LayerParameter::set_has_hdf5_output_param() {
+inline void V0LayerParameter::set_has_ntile_width() {
   _has_bits_[1] |= 0x00000020u;
 }
-inline void V0LayerParameter::clear_has_hdf5_output_param() {
+inline void V0LayerParameter::clear_has_ntile_width() {
   _has_bits_[1] &= ~0x00000020u;
+}
+inline void V0LayerParameter::clear_ntile_width() {
+  ntile_width_ = 1;
+  clear_has_ntile_width();
+}
+inline ::google::protobuf::int32 V0LayerParameter::ntile_width() const {
+  return ntile_width_;
+}
+inline void V0LayerParameter::set_ntile_width(::google::protobuf::int32 value) {
+  set_has_ntile_width();
+  ntile_width_ = value;
+}
+
+// optional int32 ntile_height = 73 [default = 1];
+inline bool V0LayerParameter::has_ntile_height() const {
+  return (_has_bits_[1] & 0x00000040u) != 0;
+}
+inline void V0LayerParameter::set_has_ntile_height() {
+  _has_bits_[1] |= 0x00000040u;
+}
+inline void V0LayerParameter::clear_has_ntile_height() {
+  _has_bits_[1] &= ~0x00000040u;
+}
+inline void V0LayerParameter::clear_ntile_height() {
+  ntile_height_ = 1;
+  clear_has_ntile_height();
+}
+inline ::google::protobuf::int32 V0LayerParameter::ntile_height() const {
+  return ntile_height_;
+}
+inline void V0LayerParameter::set_ntile_height(::google::protobuf::int32 value) {
+  set_has_ntile_height();
+  ntile_height_ = value;
+}
+
+// optional .caffe.HDF5OutputParameter hdf5_output_param = 1001;
+inline bool V0LayerParameter::has_hdf5_output_param() const {
+  return (_has_bits_[1] & 0x00000080u) != 0;
+}
+inline void V0LayerParameter::set_has_hdf5_output_param() {
+  _has_bits_[1] |= 0x00000080u;
+}
+inline void V0LayerParameter::clear_has_hdf5_output_param() {
+  _has_bits_[1] &= ~0x00000080u;
 }
 inline void V0LayerParameter::clear_hdf5_output_param() {
   if (hdf5_output_param_ != NULL) hdf5_output_param_->::caffe::HDF5OutputParameter::Clear();

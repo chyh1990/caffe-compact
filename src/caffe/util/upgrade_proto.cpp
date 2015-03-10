@@ -342,6 +342,9 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
       } else if (type == "window_data") {
         layer_param->mutable_window_data_param()->set_batch_size(
             v0_layer_param.batchsize());
+      } else if (type == "raw_image") {
+        layer_param->mutable_memory_data_param()->set_batch_size(
+            v0_layer_param.batchsize());
       } else {
         LOG(ERROR) << "Unknown parameter batchsize for layer type " << type;
         is_fully_compatible = false;
@@ -380,6 +383,9 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
       if (type == "images") {
         layer_param->mutable_image_data_param()->set_new_height(
             v0_layer_param.new_height());
+      } else if (type == "raw_image") {
+        layer_param->mutable_memory_data_param()->set_height(
+            v0_layer_param.new_height());
       } else {
         LOG(ERROR) << "Unknown parameter new_height for layer type " << type;
         is_fully_compatible = false;
@@ -389,10 +395,23 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
       if (type == "images") {
         layer_param->mutable_image_data_param()->set_new_width(
             v0_layer_param.new_width());
+      } else if (type == "raw_image") {
+        layer_param->mutable_memory_data_param()->set_width(
+            v0_layer_param.new_width());
       } else {
         LOG(ERROR) << "Unknown parameter new_width for layer type " << type;
         is_fully_compatible = false;
       }
+    }
+    if (v0_layer_param.has_new_channels()) {
+      if (type == "raw_image") {
+        layer_param->mutable_memory_data_param()->set_channels(
+            v0_layer_param.new_channels());
+      } else {
+        LOG(ERROR) << "Unknown parameter channels for layer type " << type;
+        is_fully_compatible = false;
+      }
+
     }
     if (v0_layer_param.has_concat_dim()) {
       if (type == "concat") {
@@ -463,6 +482,26 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
         is_fully_compatible = false;
       }
     }
+    if (v0_layer_param.has_ntile_height()) {
+      if (type == "conv") {
+        layer_param->mutable_convolution_param()->set_ntile_height(
+            v0_layer_param.ntile_height());
+      } else {
+        LOG(ERROR) << "Unknown parameter nitle_height for layer type "
+                   << type;
+        is_fully_compatible = false;
+      }
+    }
+    if (v0_layer_param.has_ntile_width()) {
+      if (type == "conv") {
+        layer_param->mutable_convolution_param()->set_ntile_width(
+            v0_layer_param.ntile_width());
+      } else {
+        LOG(ERROR) << "Unknown parameter nitle_width for layer type "
+                   << type;
+        is_fully_compatible = false;
+      }
+    }
   }
   return is_fully_compatible;
 }
@@ -516,6 +555,10 @@ V1LayerParameter_LayerType UpgradeV0LayerType(const string& type) {
     return V1LayerParameter_LayerType_TANH;
   } else if (type == "window_data") {
     return V1LayerParameter_LayerType_WINDOW_DATA;
+  } else if (type == "memory_data") {
+    return V1LayerParameter_LayerType_MEMORY_DATA;
+  } else if (type == "raw_image") {
+    return V1LayerParameter_LayerType_MEMORY_DATA;
   } else {
     LOG(FATAL) << "Unknown layer name: " << type;
     return V1LayerParameter_LayerType_NONE;

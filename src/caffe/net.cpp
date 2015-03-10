@@ -636,7 +636,8 @@ void Net<Dtype>::ShareTrainedLayersWith(const Net* other) {
     vector<shared_ptr<Blob<Dtype> > >& target_blobs =
         layers_[target_layer_id]->blobs();
     CHECK_EQ(target_blobs.size(), source_layer->blobs().size())
-        << "Incompatible number of blobs for layer " << source_layer_name;
+        << "Incompatible number of blobs for layer " << source_layer_name 
+	<< " " << target_blobs.size() << " vs. " << source_layer->blobs().size();
     for (int j = 0; j < target_blobs.size(); ++j) {
       Blob<Dtype>* source_blob = source_layer->blobs()[j].get();
       CHECK(target_blobs[j]->shape() == source_blob->shape());
@@ -701,7 +702,8 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     vector<shared_ptr<Blob<Dtype> > >& target_blobs =
         layers_[target_layer_id]->blobs();
     CHECK_EQ(target_blobs.size(), source_layer.blobs_size())
-        << "Incompatible number of blobs for layer " << source_layer_name;
+        << "Incompatible number of blobs for layer " << source_layer_name
+	<< " " << target_blobs.size() << " vs. " << source_layer.blobs_size();
     for (int j = 0; j < target_blobs.size(); ++j) {
       const bool kReshape = false;
       target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
@@ -813,4 +815,26 @@ const shared_ptr<Layer<Dtype> > Net<Dtype>::layer_by_name(
 
 INSTANTIATE_CLASS(Net);
 
+/* force register */
+#define FORCE_REG(type) \
+	extern LayerRegistry<float> g_creator_f_##type; \
+	extern LayerRegistry<double> g_creator_d_##type; \
+	LayerRegistry<float> *__g_creator_f_##type = &g_creator_f_##type; \
+	LayerRegistry<double> *__g_creator_d_##type = &g_creator_d_##type
+
+FORCE_REG(TanH);
+FORCE_REG(Pooling);
+FORCE_REG(ReLU);
+FORCE_REG(Sigmoid);
+FORCE_REG(Softmax);
+FORCE_REG(Convolution);
+
+FORCE_REG(Concat);
+FORCE_REG(BNLL);
+FORCE_REG(Flatten);
+FORCE_REG(InnerProduct);
+FORCE_REG(LRN);
+FORCE_REG(MemoryData);
+
+FORCE_REG(Split);
 }  // namespace caffe

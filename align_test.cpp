@@ -25,7 +25,7 @@ using namespace cv;
 
 float getMean( float * p )
 {
-	float ans;
+	float ans = 0.0f;
 	for(int i = 0 ; i < CROP_WINSIZE * CROP_WINSIZE ; i++, p++)
 		ans += *p;
 	ans = ans/ float( CROP_WINSIZE * CROP_WINSIZE );
@@ -34,11 +34,11 @@ float getMean( float * p )
 
 float getStd( float * p , float mean)
 {
-	float ans;
+	float ans = 0.0f;
 	for(int i = 0 ; i < CROP_WINSIZE * CROP_WINSIZE ; i++, p++)
 		ans += ( (*p-mean) * (*p-mean) );
 	ans = ans/ float( CROP_WINSIZE * CROP_WINSIZE - 1);
-	ans = sqrt( ans );
+	ans = sqrt( ans ) + 1e-5f;
 	return ans;
 }
 void getZscore( Mat & img, int left, int right, int top, int bottom, float * & score )
@@ -48,7 +48,6 @@ void getZscore( Mat & img, int left, int right, int top, int bottom, float * & s
 		std::cerr << "warning! a color image input" << std::endl;
 		cv::cvtColor( img , img , CV_RGB2GRAY );
 	}
-
 	double scale = (right - left) / double( CROP_WINSIZE );
 	
 	left  -= int( scale * CROP_PADDING );
@@ -67,9 +66,11 @@ void getZscore( Mat & img, int left, int right, int top, int bottom, float * & s
 	cv::resize( patch , patch, Size( CROP_WINSIZE, CROP_WINSIZE ) );
 	
 	patch.convertTo( patch, CV_32F );	
+	//cv::imshow("AA", patch / 255.0);
 	
 	float mu = getMean(  patch.ptr<float>() );
 	float sigma = getStd(  patch.ptr<float>() , mu);
+	fprintf(stderr, "mu %f, sigma %f\n", mu, sigma);
 	
 	score = new( float[ CROP_WINSIZE * CROP_WINSIZE ] );
 	
@@ -121,10 +122,11 @@ int main(int argc, char** argv) {
 	Caffe::set_mode(Caffe::CPU);
 
 	NetParameter test_net_param;
-	ReadProtoFromTextFile(argv[1], &test_net_param);
+	ReadNetParamsFromTextFileOrDie(argv[1], &test_net_param);
+
 	Net<float> caffe_test_net(test_net_param);
 	NetParameter trained_net_param;
-	ReadProtoFromBinaryFile(argv[2], &trained_net_param);
+	ReadNetParamsFromBinaryFileOrDie(argv[2], &trained_net_param);
 	caffe_test_net.CopyTrainedLayersFrom(trained_net_param);
 
 #if 0
@@ -184,10 +186,13 @@ int main(int argc, char** argv) {
 		if(!p)
 			continue;
 
-		float *d = data_blob->mutable_cpu_data();
+		//float *d = data_blob->mutable_cpu_data();
 		size_t len = ih * iw * ic;
 		//XXX
 		float dummy_label[1] = {0};
+		float tmp[32] = {0};
+		//draw(p, tmp);
+#if 1
 		data_layer->Reset(p, dummy_label, 1);
 		for(int j = 0; j < data_blob->num(); j++){
 			//memcpy(d, p, sizeof(float)*CROP_WINSIZE*CROP_WINSIZE);
@@ -212,7 +217,8 @@ int main(int argc, char** argv) {
 		}
 		fflush(stdout);
 
-		//draw(p, pt);
+		draw(p, pt);
+#endif
 		delete [] p;
 
 		//sprintf(output_dir, "%s/feat_%05d", argv[4], i);

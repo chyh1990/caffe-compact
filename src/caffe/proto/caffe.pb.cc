@@ -1105,7 +1105,7 @@ void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto() {
   V1LayerParameter_LayerType_descriptor_ = V1LayerParameter_descriptor_->enum_type(0);
   V1LayerParameter_DimCheckMode_descriptor_ = V1LayerParameter_descriptor_->enum_type(1);
   V0LayerParameter_descriptor_ = file->message_type(44);
-  static const int V0LayerParameter_offsets_[38] = {
+  static const int V0LayerParameter_offsets_[40] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, num_output_),
@@ -1143,6 +1143,8 @@ void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, new_width_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, shuffle_images_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, concat_dim_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, ntile_width_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, ntile_height_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(V0LayerParameter, hdf5_output_param_),
   };
   V0LayerParameter_reflection_ =
@@ -1636,7 +1638,7 @@ void protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto() {
     "\033\022\013\n\007SILENCE\020$\022\013\n\007SOFTMAX\020\024\022\020\n\014SOFTMAX_L"
     "OSS\020\025\022\t\n\005SPLIT\020\026\022\t\n\005SLICE\020!\022\010\n\004TANH\020\027\022\017\n"
     "\013WINDOW_DATA\020\030\022\r\n\tTHRESHOLD\020\037\"*\n\014DimChec"
-    "kMode\022\n\n\006STRICT\020\000\022\016\n\nPERMISSIVE\020\001\"\375\007\n\020V0"
+    "kMode\022\n\n\006STRICT\020\000\022\016\n\nPERMISSIVE\020\001\"\256\010\n\020V0"
     "LayerParameter\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001"
     "(\t\022\022\n\nnum_output\030\003 \001(\r\022\026\n\010biasterm\030\004 \001(\010"
     ":\004true\022-\n\rweight_filler\030\005 \001(\0132\026.caffe.Fi"
@@ -1659,11 +1661,12 @@ void protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto() {
     "\001(\t:\004warp\022\022\n\007new_num\030< \001(\005:\0010\022\027\n\014new_cha"
     "nnels\030= \001(\005:\0010\022\025\n\nnew_height\030> \001(\005:\0010\022\024\n"
     "\tnew_width\030\? \001(\005:\0010\022\035\n\016shuffle_images\030@ "
-    "\001(\010:\005false\022\025\n\nconcat_dim\030A \001(\r:\0011\0226\n\021hdf"
-    "5_output_param\030\351\007 \001(\0132\032.caffe.HDF5Output"
-    "Parameter\".\n\nPoolMethod\022\007\n\003MAX\020\000\022\007\n\003AVE\020"
-    "\001\022\016\n\nSTOCHASTIC\020\002*\034\n\005Phase\022\t\n\005TRAIN\020\000\022\010\n"
-    "\004TEST\020\001", 11967);
+    "\001(\010:\005false\022\025\n\nconcat_dim\030A \001(\r:\0011\022\026\n\013nti"
+    "le_width\030H \001(\005:\0011\022\027\n\014ntile_height\030I \001(\005:"
+    "\0011\0226\n\021hdf5_output_param\030\351\007 \001(\0132\032.caffe.H"
+    "DF5OutputParameter\".\n\nPoolMethod\022\007\n\003MAX\020"
+    "\000\022\007\n\003AVE\020\001\022\016\n\nSTOCHASTIC\020\002*\034\n\005Phase\022\t\n\005T"
+    "RAIN\020\000\022\010\n\004TEST\020\001", 12016);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "caffe/proto/caffe.proto", &protobuf_RegisterTypes);
   BlobShape::default_instance_ = new BlobShape();
@@ -22477,6 +22480,8 @@ const int V0LayerParameter::kNewHeightFieldNumber;
 const int V0LayerParameter::kNewWidthFieldNumber;
 const int V0LayerParameter::kShuffleImagesFieldNumber;
 const int V0LayerParameter::kConcatDimFieldNumber;
+const int V0LayerParameter::kNtileWidthFieldNumber;
+const int V0LayerParameter::kNtileHeightFieldNumber;
 const int V0LayerParameter::kHdf5OutputParamFieldNumber;
 #endif  // !_MSC_VER
 
@@ -22533,6 +22538,8 @@ void V0LayerParameter::SharedCtor() {
   new_width_ = 0;
   shuffle_images_ = false;
   concat_dim_ = 1u;
+  ntile_width_ = 1;
+  ntile_height_ = 1;
   hdf5_output_param_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -22652,6 +22659,8 @@ void V0LayerParameter::Clear() {
     new_width_ = 0;
     shuffle_images_ = false;
     concat_dim_ = 1u;
+    ntile_width_ = 1;
+    ntile_height_ = 1;
     if (has_hdf5_output_param()) {
       if (hdf5_output_param_ != NULL) hdf5_output_param_->::caffe::HDF5OutputParameter::Clear();
     }
@@ -23273,6 +23282,38 @@ bool V0LayerParameter::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(576)) goto parse_ntile_width;
+        break;
+      }
+      
+      // optional int32 ntile_width = 72 [default = 1];
+      case 72: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_ntile_width:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &ntile_width_)));
+          set_has_ntile_width();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(584)) goto parse_ntile_height;
+        break;
+      }
+      
+      // optional int32 ntile_height = 73 [default = 1];
+      case 73: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_ntile_height:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &ntile_height_)));
+          set_has_ntile_height();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectTag(8010)) goto parse_hdf5_output_param;
         break;
       }
@@ -23520,6 +23561,16 @@ void V0LayerParameter::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(65, this->concat_dim(), output);
   }
   
+  // optional int32 ntile_width = 72 [default = 1];
+  if (has_ntile_width()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(72, this->ntile_width(), output);
+  }
+  
+  // optional int32 ntile_height = 73 [default = 1];
+  if (has_ntile_height()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(73, this->ntile_height(), output);
+  }
+  
   // optional .caffe.HDF5OutputParameter hdf5_output_param = 1001;
   if (has_hdf5_output_param()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -23751,6 +23802,16 @@ void V0LayerParameter::SerializeWithCachedSizes(
   // optional uint32 concat_dim = 65 [default = 1];
   if (has_concat_dim()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(65, this->concat_dim(), target);
+  }
+  
+  // optional int32 ntile_width = 72 [default = 1];
+  if (has_ntile_width()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(72, this->ntile_width(), target);
+  }
+  
+  // optional int32 ntile_height = 73 [default = 1];
+  if (has_ntile_height()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(73, this->ntile_height(), target);
   }
   
   // optional .caffe.HDF5OutputParameter hdf5_output_param = 1001;
@@ -23994,6 +24055,20 @@ int V0LayerParameter::ByteSize() const {
           this->concat_dim());
     }
     
+    // optional int32 ntile_width = 72 [default = 1];
+    if (has_ntile_width()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->ntile_width());
+    }
+    
+    // optional int32 ntile_height = 73 [default = 1];
+    if (has_ntile_height()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->ntile_height());
+    }
+    
     // optional .caffe.HDF5OutputParameter hdf5_output_param = 1001;
     if (has_hdf5_output_param()) {
       total_size += 2 +
@@ -24163,6 +24238,12 @@ void V0LayerParameter::MergeFrom(const V0LayerParameter& from) {
     if (from.has_concat_dim()) {
       set_concat_dim(from.concat_dim());
     }
+    if (from.has_ntile_width()) {
+      set_ntile_width(from.ntile_width());
+    }
+    if (from.has_ntile_height()) {
+      set_ntile_height(from.ntile_height());
+    }
     if (from.has_hdf5_output_param()) {
       mutable_hdf5_output_param()->::caffe::HDF5OutputParameter::MergeFrom(from.hdf5_output_param());
     }
@@ -24226,6 +24307,8 @@ void V0LayerParameter::Swap(V0LayerParameter* other) {
     std::swap(new_width_, other->new_width_);
     std::swap(shuffle_images_, other->shuffle_images_);
     std::swap(concat_dim_, other->concat_dim_);
+    std::swap(ntile_width_, other->ntile_width_);
+    std::swap(ntile_height_, other->ntile_height_);
     std::swap(hdf5_output_param_, other->hdf5_output_param_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     std::swap(_has_bits_[1], other->_has_bits_[1]);

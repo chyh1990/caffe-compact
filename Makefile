@@ -33,7 +33,7 @@ endif
 
 CXXFLAGS += -DCPU_ONLY
 
-COMMON_FLAGS := -O2 $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
+COMMON_FLAGS := -O2 -g $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
 CXXFLAGS +=  -fPIC $(COMMON_FLAGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
 		$(foreach library,$(LIBRARIES),-l$(library))

@@ -936,5 +936,7 @@ message V0LayerParameter {
   // By default it will concatenate blobs along the channels dimension.
   optional uint32 concat_dim = 65 [default = 1];
 
+  optional int32 ntile_width = 72 [default = 1];
+  optional int32 ntile_height = 73 [default = 1];
   optional HDF5OutputParameter hdf5_output_param = 1001;
 }

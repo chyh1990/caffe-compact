@@ -34,9 +34,6 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
   }else{
-	  NOT_IMPLEMENTED;
-	  exit(0);
-
 	  CHECK_EQ(this->stride_h_, 1);
 	  CHECK_EQ(this->stride_w_, 1);
 	  CHECK_EQ(this->pad_h_, 0);

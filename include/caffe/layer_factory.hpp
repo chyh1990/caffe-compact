@@ -105,14 +105,15 @@ class LayerRegisterer {
   LayerRegisterer(const string& type,
                   shared_ptr<Layer<Dtype> > (*creator)(const LayerParameter&)) {
     // LOG(INFO) << "Registering layer type: " << type;
+    fprintf(stderr, "Registering Layer type: %s\n", type.c_str());
     LayerRegistry<Dtype>::AddCreator(type, creator);
   }
 };
 
 
 #define REGISTER_LAYER_CREATOR(type, creator)                                  \
-  static LayerRegisterer<float> g_creator_f_##type(#type, creator<float>);     \
-  static LayerRegisterer<double> g_creator_d_##type(#type, creator<double>)    \
+  LayerRegisterer<float> g_creator_f_##type(#type, creator<float>);     \
+  LayerRegisterer<double> g_creator_d_##type(#type, creator<double>)    \
 
 #define REGISTER_LAYER_CLASS(type)                                             \
   template <typename Dtype>                                                    \

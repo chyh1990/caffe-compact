@@ -64,6 +64,7 @@ template <typename Dtype>
 void SoftmaxLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
+#if 0
   const Dtype* top_diff = top[0]->cpu_diff();
   const Dtype* top_data = top[0]->cpu_data();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
@@ -84,6 +85,9 @@ void SoftmaxLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
   // elementwise multiplication
   caffe_mul(top[0]->count(), bottom_diff, top_data, bottom_diff);
+#endif
+
+  NOT_IMPLEMENTED;
 }
 
 

@@ -46,6 +46,7 @@ class ConstantFiller : public Filler<Dtype> {
   }
 };
 
+#if 0
 /// @brief Fills a Blob with uniformly distributed values @f$ x\sim U(a, b) @f$.
 template <typename Dtype>
 class UniformFiller : public Filler<Dtype> {
@@ -156,6 +157,7 @@ class XavierFiller : public Filler<Dtype> {
   }
 };
 
+#endif
 
 /**
  * @brief Get a specific filler from the specification given in FillerParameter.
@@ -168,6 +170,7 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
   const std::string& type = param.type();
   if (type == "constant") {
     return new ConstantFiller<Dtype>(param);
+#if 0
   } else if (type == "gaussian") {
     return new GaussianFiller<Dtype>(param);
   } else if (type == "positive_unitball") {
@@ -176,6 +179,7 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
     return new UniformFiller<Dtype>(param);
   } else if (type == "xavier") {
     return new XavierFiller<Dtype>(param);
+#endif
   } else {
     CHECK(false) << "Unknown filler name: " << param.type();
   }

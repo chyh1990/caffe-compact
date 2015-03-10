@@ -49,6 +49,12 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     stride_h_ = conv_param.stride_h();
     stride_w_ = conv_param.stride_w();
   }
+
+  NTILE_WIDTH_ = this->layer_param_.convolution_param().ntile_width();
+  NTILE_HEIGHT_ = this->layer_param_.convolution_param().ntile_height();
+
+  ntiles_ = NTILE_WIDTH_ * NTILE_HEIGHT_;
+
   // Special case: im2col is the identity for 1x1 convolution with stride 1
   // and no padding, so flag for skipping the buffer and transformation.
   is_1x1_ = kernel_w_ == 1 && kernel_h_ == 1
@@ -82,18 +88,24 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     }
     // Initialize and fill the weights:
     // output channels x input channels per-group x kernel height x kernel width
-    this->blobs_[0].reset(new Blob<Dtype>(
+    for(int i = 0; i < ntiles_; i++) {
+    this->blobs_[i].reset(new Blob<Dtype>(
         conv_out_channels_, conv_in_channels_ / group_, kernel_h_, kernel_w_));
+#if 0
     shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
         this->layer_param_.convolution_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
+#endif
     // If necessary, initialize and fill the biases.
     if (bias_term_) {
       vector<int> bias_shape(1, num_output_);
-      this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
+      this->blobs_[ntiles_ + i].reset(new Blob<Dtype>(bias_shape));
+#if 0
       shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
           this->layer_param_.convolution_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
+#endif
+    }
     }
   }
   // Propagate gradients to the parameters (as directed by backward pass).
@@ -110,6 +122,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   width_ = bottom[0]->width();
   CHECK_EQ(bottom[0]->channels(), channels_) << "Input size incompatible with"
     " convolution kernel.";
+
   // TODO: generalize to handle inputs of different shapes.
   for (int bottom_id = 1; bottom_id < bottom.size(); ++bottom_id) {
     CHECK_EQ(num_, bottom[bottom_id]->num()) << "Inputs must have same num.";
@@ -123,19 +136,15 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   // Shape the tops.
   compute_output_shape();
 //  XXX
-  TILE_WIDTH_ = std::ceil(float(width_out_) / NTILE_WIDTH_);
-  TILE_HEIGHT_ = std::ceil(float(height_out_) / NTILE_HEIGHT_);
+  CHECK_EQ(width_out_ % NTILE_WIDTH_, 0);
+  CHECK_EQ(height_out_ % NTILE_HEIGHT_, 0);
+  TILE_WIDTH_ = width_out_ / NTILE_WIDTH_;
+  TILE_HEIGHT_ = height_out_ / NTILE_HEIGHT_;
 
-  NTILE_WIDTH_ = std::ceil(width_out_ / (float)TILE_WIDTH_);
-  NTILE_HEIGHT_ = std::ceil(height_out_ / (float)TILE_HEIGHT_);
-
-  LOG(INFO) << "New NW, NH = " << NTILE_WIDTH_ << ", " << NTILE_HEIGHT_ ;
+  //LOG(INFO) << "New NW, NH = " << TILE_WIDTH_ << ", " << TILE_HEIGHT_ ;
 
   CHECK(height_out_ % NTILE_HEIGHT_ == 0);
   CHECK(width_out_ % NTILE_WIDTH_ == 0);
-
-  ntiles_ = NTILE_WIDTH_ * NTILE_HEIGHT_;
-
 
   for (int top_id = 0; top_id < top.size(); ++top_id) {
     top[top_id]->Reshape(num_, num_output_, height_out_, width_out_);
@@ -157,10 +166,10 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   // overly large memory usage. In the special case of 1x1 convolution
   // it goes lazily unused to save memory.
   if (reverse_dimensions()) {
-    //col_buffer_.Reshape(1, kernel_dim_, height_, width_);
-    col_buffer_.Reshape(1, kernel_dim_, NTILE_HEIGHT_, NTILE_WIDTH_);
+    col_buffer_.Reshape(1, kernel_dim_, height_, width_);
   } else {
-    col_buffer_.Reshape(1, kernel_dim_, height_out_, width_out_);
+    col_buffer_.Reshape(1, kernel_dim_, TILE_HEIGHT_, TILE_WIDTH_);
+    //col_buffer_.Reshape(1, kernel_dim_, height_out_, width_out_);
     if(ntiles_ > 1)
 	    out_buffer_.Reshape(1, num_output_, TILE_HEIGHT_, TILE_WIDTH_);
   }

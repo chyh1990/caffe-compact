@@ -211,6 +211,21 @@ template void caffe_set<int>(const int N, const int alpha, int* Y);
 template void caffe_set<float>(const int N, const float alpha, float* Y);
 template void caffe_set<double>(const int N, const double alpha, double* Y);
 
+template <>
+void caffe_add_scalar(const int N, const float alpha, float* Y) {
+  for (int i = 0; i < N; ++i) {
+    Y[i] += alpha;
+  }
+}
+
+template <>
+void caffe_add_scalar(const int N, const double alpha, double* Y) {
+  for (int i = 0; i < N; ++i) {
+    Y[i] += alpha;
+  }
+}
+
+
 #if 0
 template <>
 void caffe_gpu_axpy<float>(const int N, const float alpha, const float* X,
@@ -459,6 +474,32 @@ double caffe_cpu_asum<double>(const int n, const double* x) {
   return eX.cwiseAbs().sum();
 #else
   return cblas_dasum(n, x, 1);
+#endif
+}
+
+template <>
+void caffe_cpu_scale<float>(const int n, const float alpha, const float *x,
+                            float* y) {
+#ifdef USE_EIGEN
+  MAP_CONST_SVECTOR(eX, x, n);
+  MAP_SVECTOR(eY, y, n);
+  eY = eX.array() * alpha;
+#else
+  cblas_scopy(n, x, 1, y, 1);
+  cblas_sscal(n, alpha, y, 1);
+#endif
+}
+
+template <>
+void caffe_cpu_scale<double>(const int n, const double alpha, const double *x,
+                             double* y) {
+#ifdef USE_EIGEN
+  MAP_CONST_DVECTOR(eX, x, n);
+  MAP_DVECTOR(eY, y, n);
+  eY = eX.array() * alpha;
+#else
+  cblas_dcopy(n, x, 1, y, 1);
+  cblas_dscal(n, alpha, y, 1);
 #endif
 }
 
